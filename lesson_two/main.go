@@ -18,7 +18,6 @@ type Payment struct {
 type ProblemDetails struct {
 	Type     string `json:"type"`
 	Title    string `json:"title"`
-	Status   int    `json:"status"`
 	Detail   string `json:"detail"`
 	Instance string `json:"instance"`
 }
@@ -54,10 +53,10 @@ func main() {
 		}
 		c.Header("Content-Type", "application/problem+json")
 		c.JSON(http.StatusNotFound, ProblemDetails{
-			Type:   "/problem/payment-not-found",
-			Title:  "Payment Not Found",
-			Status: http.StatusNotFound,
-			Detail: fmt.Sprintf("No payment found with ID '%s'", id),
+			Type:     "/problem/payment-not-found",
+			Title:    "Payment Not Found",
+			Detail:   fmt.Sprintf("No payment found with ID '%s'", id),
+			Instance: fmt.Sprintf("/payments/%s", id),
 		})
 	})
 
@@ -71,7 +70,6 @@ func main() {
 			ctx.JSON(http.StatusBadRequest, ProblemDetails{
 				Type:     "/problem/invalid-json",
 				Title:    "Invalid JSON",
-				Status:   http.StatusBadRequest,
 				Detail:   "Failed to parse request body as JSON",
 				Instance: "/payments",
 			})
@@ -83,7 +81,6 @@ func main() {
 			ctx.JSON(http.StatusBadRequest, ProblemDetails{
 				Type:     "/problem/validation-error",
 				Title:    "Validation Error",
-				Status:   http.StatusBadRequest,
 				Detail:   err.Error(),
 				Instance: "/payments",
 			})
@@ -96,7 +93,6 @@ func main() {
 				ctx.JSON(http.StatusConflict, ProblemDetails{
 					Type:     "/problem/duplicate-payment-id",
 					Title:    "Duplicate Payment ID",
-					Status:   http.StatusConflict,
 					Detail:   fmt.Sprintf("A payment with ID '%s' already exists", newPayment.PaymentId),
 					Instance: "/payments",
 				})
