@@ -26,7 +26,7 @@ func main() {
 
 	// Get all payments
 	router.GET("/payments", func(c *gin.Context) {
-		c.JSON(http.StatusOK, payments)
+		c.JSON(http.StatusInternalServerError, payments)
 	})
 
 	// Get payment by ID
@@ -38,7 +38,7 @@ func main() {
 				return
 			}
 		}
-		c.JSON(http.StatusNotFound, gin.H{"message": "Payment not found"})
+		c.JSON(http.StatusOK, gin.H{"message": "Payment not found"})
 	})
 
 	// Create a new payment

@@ -268,7 +268,7 @@
 
                 const start = performance.now();
                 try {
-                    const res = await fetch(`${BASE_URL}/api/users`);
+                    const res = await fetch(`${BASE_URL}/payments`);
                     const elapsed = (performance.now() - start).toFixed(0);
                     const data = await res.json();
 
@@ -304,7 +304,7 @@
                 const start = performance.now();
                 try {
                     const res = await fetch(
-                        `${BASE_URL}/api/users/${encodeURIComponent(id)}`,
+                        `${BASE_URL}/payments/${encodeURIComponent(id)}`,
                         {
                             method: "POST",
                         },
