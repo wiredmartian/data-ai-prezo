@@ -52,6 +52,7 @@ func main() {
 				return
 			}
 		}
+		c.Header("Content-Type", "application/problem+json")
 		c.JSON(http.StatusNotFound, ProblemDetails{
 			Type:   "/problem/payment-not-found",
 			Title:  "Payment Not Found",
@@ -64,7 +65,9 @@ func main() {
 	router.POST("/payments", func(ctx *gin.Context) {
 		var newPayment Payment
 		var err error
+
 		if err := ctx.BindJSON(&newPayment); err != nil {
+			ctx.Header("Content-Type", "application/problem+json")
 			ctx.JSON(http.StatusBadRequest, ProblemDetails{
 				Type:     "/problem/invalid-json",
 				Title:    "Invalid JSON",
@@ -76,6 +79,7 @@ func main() {
 		}
 		err = validate.Struct(newPayment)
 		if err != nil {
+			ctx.Header("Content-Type", "application/problem+json")
 			ctx.JSON(http.StatusBadRequest, ProblemDetails{
 				Type:     "/problem/validation-error",
 				Title:    "Validation Error",
@@ -88,6 +92,7 @@ func main() {
 		// Check for duplicate PaymentId
 		for _, payment := range payments {
 			if payment.PaymentId == newPayment.PaymentId {
+				ctx.Header("Content-Type", "application/problem+json")
 				ctx.JSON(http.StatusConflict, ProblemDetails{
 					Type:     "/problem/duplicate-payment-id",
 					Title:    "Duplicate Payment ID",
