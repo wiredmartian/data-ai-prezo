@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Users API Tester</title>
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f0f2f5;
+                color: #333;
+                padding: 40px 20px;
+            }
+
+            h1 {
+                text-align: center;
+                margin-bottom: 40px;
+                font-size: 2rem;
+                color: #2c3e50;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                display: flex;
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .card {
+                background: #fff;
+                border-radius: 12px;
+                padding: 28px;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            }
+
+            .card h2 {
+                font-size: 1.2rem;
+                margin-bottom: 16px;
+                color: #2c3e50;
+                border-bottom: 2px solid #e8ecef;
+                padding-bottom: 10px;
+            }
+
+            .row {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            input[type="text"] {
+                flex: 1;
+                padding: 10px 14px;
+                border: 1px solid #cdd1d8;
+                border-radius: 8px;
+                font-size: 0.95rem;
+                outline: none;
+                transition: border-color 0.2s;
+            }
+
+            input[type="text"]:focus {
+                border-color: #4a90e2;
+            }
+
+            button {
+                padding: 10px 22px;
+                background-color: #4a90e2;
+                color: #fff;
+                border: none;
+                border-radius: 8px;
+                font-size: 0.95rem;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                white-space: nowrap;
+            }
+
+            button:hover {
+                background-color: #357abd;
+            }
+
+            button:active {
+                background-color: #2a6099;
+            }
+
+            .result {
+                margin-top: 20px;
+            }
+
+            .result h3 {
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+                color: #888;
+                margin-bottom: 8px;
+            }
+
+            .status-badge {
+                display: inline-block;
+                padding: 3px 10px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                margin-bottom: 10px;
+            }
+
+            .status-ok {
+                background-color: #d4edda;
+                color: #1a6630;
+            }
+
+            .status-error {
+                background-color: #fde8e8;
+                color: #9b1c1c;
+            }
+
+            .status-warn {
+                background-color: #fff3cd;
+                color: #856404;
+            }
+
+            pre {
+                background-color: #f6f8fa;
+                border: 1px solid #e1e4e8;
+                border-radius: 8px;
+                padding: 16px;
+                font-size: 0.9rem;
+                overflow-x: auto;
+                white-space: pre-wrap;
+                word-break: break-word;
+                line-height: 1.6;
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+                margin-top: 10px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.92rem;
+            }
+
+            thead tr {
+                background-color: #4a90e2;
+                color: #fff;
+            }
+
+            thead th {
+                padding: 10px 14px;
+                text-align: left;
+                font-weight: 600;
+            }
+
+            tbody tr:nth-child(even) {
+                background-color: #f6f8fa;
+            }
+
+            tbody td {
+                padding: 10px 14px;
+                border-bottom: 1px solid #e8ecef;
+            }
+
+            .empty {
+                color: #aaa;
+                font-style: italic;
+                font-size: 0.9rem;
+                margin-top: 10px;
+            }
+
+            .meta {
+                font-size: 0.78rem;
+                color: #999;
+                margin-top: 6px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Users API Tester</h1>
+
+        <div class="container">
+            <!-- List All Users -->
+            <div class="card">
+                <h2>List All Users</h2>
+                <div class="row">
+                    <button id="fetchUsersBtn" onclick="fetchAllUsers()">
+                        GET /api/users
+                    </button>
+                </div>
+
+                <div class="result" id="usersResult" style="display: none">
+                    <h3>Response</h3>
+                    <span class="status-badge" id="usersStatusBadge"></span>
+                    <p class="meta" id="usersMeta"></p>
+                    <div class="table-wrapper" id="usersTable"></div>
+                    <pre id="usersRaw"></pre>
+                </div>
+            </div>
+
+            <!-- Get User by ID -->
+            <div class="card">
+                <h2>Get User by ID</h2>
+                <div class="row">
+                    <input
+                        type="text"
+                        id="userIdInput"
+                        placeholder="Enter user ID (e.g. 1)"
+                    />
+                    <button onclick="fetchUserById()">
+                        POST /api/users/:id
+                    </button>
+                </div>
+
+                <div class="result" id="userByIdResult" style="display: none">
+                    <h3>Response</h3>
+                    <span class="status-badge" id="userByIdStatusBadge"></span>
+                    <p class="meta" id="userByIdMeta"></p>
+                    <pre id="userByIdRaw"></pre>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const BASE_URL = "http://localhost:8080";
+
+            function getStatusBadgeClass(status) {
+                if (status >= 200 && status < 300) return "status-ok";
+                if (status >= 400 && status < 500) return "status-warn";
+                return "status-error";
+            }
+
+            function renderUsersTable(users) {
+                if (!Array.isArray(users) || users.length === 0) {
+                    return '<p class="empty">No users returned.</p>';
+                }
+                const headers = Object.keys(users[0]);
+                const ths = headers
+                    .map((h) => `<th>${h.toUpperCase()}</th>`)
+                    .join("");
+                const rows = users
+                    .map((u) => {
+                        const tds = headers
+                            .map((h) => `<td>${u[h] ?? ""}</td>`)
+                            .join("");
+                        return `<tr>${tds}</tr>`;
+                    })
+                    .join("");
+                return `<table><thead><tr>${ths}</tr></thead><tbody>${rows}</tbody></table>`;
+            }
+
+            async function fetchAllUsers() {
+                const resultEl = document.getElementById("usersResult");
+                const badgeEl = document.getElementById("usersStatusBadge");
+                const metaEl = document.getElementById("usersMeta");
+                const tableEl = document.getElementById("usersTable");
+                const rawEl = document.getElementById("usersRaw");
+
+                rawEl.textContent = "Loading...";
+                tableEl.innerHTML = "";
+                resultEl.style.display = "block";
+
+                const start = performance.now();
+                try {
+                    const res = await fetch(`${BASE_URL}/api/users`);
+                    const elapsed = (performance.now() - start).toFixed(0);
+                    const data = await res.json();
+
+                    badgeEl.textContent = `${res.status} ${res.statusText}`;
+                    badgeEl.className = `status-badge ${getStatusBadgeClass(res.status)}`;
+                    metaEl.textContent = `Response time: ${elapsed}ms`;
+                    tableEl.innerHTML = renderUsersTable(data);
+                    rawEl.textContent = JSON.stringify(data, null, 2);
+                } catch (err) {
+                    badgeEl.textContent = "Network Error";
+                    badgeEl.className = "status-badge status-error";
+                    metaEl.textContent = "";
+                    tableEl.innerHTML = "";
+                    rawEl.textContent = `Error: ${err.message}`;
+                }
+            }
+
+            async function fetchUserById() {
+                const id = document.getElementById("userIdInput").value.trim();
+                const resultEl = document.getElementById("userByIdResult");
+                const badgeEl = document.getElementById("userByIdStatusBadge");
+                const metaEl = document.getElementById("userByIdMeta");
+                const rawEl = document.getElementById("userByIdRaw");
+
+                if (!id) {
+                    alert("Please enter a user ID.");
+                    return;
+                }
+
+                rawEl.textContent = "Loading...";
+                resultEl.style.display = "block";
+
+                const start = performance.now();
+                try {
+                    const res = await fetch(
+                        `${BASE_URL}/api/users/${encodeURIComponent(id)}`,
+                        {
+                            method: "POST",
+                        },
+                    );
+                    const elapsed = (performance.now() - start).toFixed(0);
+                    const data = await res.json();
+
+                    badgeEl.textContent = `${res.status} ${res.statusText}`;
+                    badgeEl.className = `status-badge ${getStatusBadgeClass(res.status)}`;
+                    metaEl.textContent = `Response time: ${elapsed}ms`;
+                    rawEl.textContent = JSON.stringify(data, null, 2);
+                } catch (err) {
+                    badgeEl.textContent = "Network Error";
+                    badgeEl.className = "status-badge status-error";
+                    metaEl.textContent = "";
+                    rawEl.textContent = `Error: ${err.message}`;
+                }
+            }
+
+            document
+                .getElementById("userIdInput")
+                .addEventListener("keydown", (e) => {
+                    if (e.key === "Enter") fetchUserById();
+                });
+        </script>
+    </body>
+</html>
